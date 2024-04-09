@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>game</title>
+        <base href="/" />
+        <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+        <link rel="stylesheet" href="css/app.css" />
+        <link rel="icon" type="image/png" href="favicon.png" />
+        <link href="game.styles.css" rel="stylesheet" />
+        <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
+    </head>
+
+    <body>
+        <div id="app">
+            <svg class="loading-progress">
+                <circle r="40%" cx="50%" cy="50%" />
+                <circle r="40%" cx="50%" cy="50%" />
+            </svg>
+            <div class="loading-progress-text"></div>
+        </div>
+
+        <div id="blazor-error-ui">
+            An unhandled error has occurred.
+            <a href="" class="reload">Reload</a>
+            <a class="dismiss">🗙</a>
+        </div>
+        <script src="_framework/blazor.webassembly.js"></script>
+
+        <script>
+            var firebaseConfig = {
+                apiKey: "AIzaSyAhOd4P02xEdjz6M4c-8OywZv1qhkTvyzQ",
+                authDomain: "rumen-2d6d7.firebaseapp.com",
+                projectId: "rumen-2d6d7",
+                storageBucket: "rumen-2d6d7.appspot.com",
+                messagingSenderId: "668659468532",
+                appId: "1:668659468532:web:d4b7ebf1c108feea16b6a1",
+                measurementId: "G-YZ3GG3H52M",
+            };
+            firebase.initializeApp(firebaseConfig);
+            function addDataToFirestore(collectionName, data) {
+                const db = firebase.firestore();
+                db.collection(collectionName)
+                    .add(data)
+                    .then(function (docRef) {
+                        console.log("Document written with ID: ", docRef.id);
+                    })
+                    .catch(function (error) {
+                        console.error("Error adding document: ", error);
+                    });
+            }
+            function getDocumentFromFirestore(collectionName, documentId) {
+                const db = firebase.firestore();
+                return db
+                    .collection(collectionName)
+                    .doc(documentId)
+                    .get()
+                    .then(function (doc) {
+                        if (doc.exists) {
+                            return { id: doc.id, ...doc.data() };
+                        } else {
+                            console.log("No such document!");
+                            return null;
+                        }
+                    })
+                    .catch(function (error) {
+                        console.error("Error getting document:", error);
+                        return null;
+                    });
+            }
+        </script>
+    </body>
+</html>

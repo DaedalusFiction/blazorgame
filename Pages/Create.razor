@@ -1,0 +1,240 @@
+﻿@page "/create-and-share"
+@inject IJSRuntime JSRuntime
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Create and Share</PageTitle>
+
+
+<div class="container container-md">
+    <h1>Create and share games</h1>
+    <br />
+    <EditForm Model="@this" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="category-panel">
+            <div class="category-header">
+                <h3>Affiliation One</h3>
+            </div>
+            <div class="category-input">
+                <label for="CategoryOne">
+                    <h5>Affiliation:</h5>
+                </label>
+                <div>
+                    <input type="text" id="CategoryOne" @bind="CategoryOne" placeholder="e.g. Lunch Meats">
+                    <h5>Clues:</h5>
+                    <ul>
+                        @for (int i = 0; i < CluesOne.Count; i++)
+                        {
+                            var iCopy = i;
+                            <p>
+                                <label hidden for="@($"clue{i}")">@(i + 1)</label>
+                                <input type="text" id="@($"clue{i}")" value="@CluesOne[i]"
+                                    @onchange="@(e => CluesOne[iCopy] = e.Value.ToString())" placeholder="Clue" />
+                            </p>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="category-panel">
+            <div class="category-header">
+                <h3>Affiliation Two</h3>
+            </div>
+            <div class="category-input">
+                <label for="CategoryTwo">
+                    <h5>Affiliation:</h5>
+                </label>
+                <div>
+                    <input type="text" id="CategoryTwo" @bind="CategoryTwo" placeholder="e.g. Lunch Meats">
+                    <h5>Clues:</h5>
+                    <ul>
+                        @for (int i = 0; i < CluesTwo.Count; i++)
+                        {
+                            var iCopy = i;
+                            <p>
+                                <label hidden for="@($"clue{i}")">@(i + 1)</label>
+                                <input type="text" id="@($"clue{i}")" value="@CluesTwo[i]"
+                                    @onchange="@(e => CluesTwo[iCopy] = e.Value.ToString())" placeholder="Clue" />
+                            </p>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="category-panel">
+            <div class="category-header">
+                <h3>Affiliation Three</h3>
+            </div>
+            <div class="category-input">
+                <label for="CategoryThree">
+                    <h5>Affiliation:</h5>
+                </label>
+                <div>
+                    <input type="text" id="CategoryThree" @bind="CategoryThree" placeholder="e.g. Lunch Meats">
+                    <h5>Clues:</h5>
+                    <ul>
+                        @for (int i = 0; i < CluesThree.Count; i++)
+                        {
+                            var iCopy = i;
+                            <p>
+                                <label hidden for="@($"clue{i}")">@(i + 1)</label>
+                                <input type="text" id="@($"clue{i}")" value="@CluesThree[i]"
+                                    @onchange="@(e => CluesThree[iCopy] = e.Value.ToString())" placeholder="Clue" />
+                            </p>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="category-panel">
+            <div class="category-header">
+                <h3>Affiliation Four</h3>
+            </div>
+            <div class="category-input">
+                <label for="CategoryFour">
+                    <h5>Affiliation:</h5>
+                </label>
+                <div>
+                    <input type="text" id="CategoryFour" @bind="CategoryFour" placeholder="e.g. Lunch Meats">
+                    <h5>Clues:</h5>
+                    <ul>
+                        @for (int i = 0; i < CluesFour.Count; i++)
+                        {
+                            var iCopy = i;
+                            <p>
+                                <label hidden for="@($"clue{i}")">@(i + 1)</label>
+                                <input type="text" id="@($"clue{i}")" value="@CluesFour[i]"
+                                    @onchange="@(e => CluesFour[iCopy] = e.Value.ToString())" placeholder="Clue" />
+                            </p>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-center"><button class="btn" type="submit">Generate Link</button></div>
+    </EditForm>
+</div>
+
+
+@code {
+    [Required]
+    private string CategoryOne = "";
+    [Required]
+    private List<string> CluesOne = new List<string>() { "", "", "", "" };
+    [Required]
+    private string CategoryTwo = "";
+    [Required]
+    private List<string> CluesTwo = new List<string>() { "", "", "", "" };
+    [Required]
+    private string CategoryThree = "";
+    [Required]
+    private List<string> CluesThree = new List<string>() { "", "", "", "" };
+    [Required]
+    private string CategoryFour = "";
+    [Required]
+    private List<string> CluesFour = new List<string>() { "", "", "", "" };
+    public void createGame()
+    {
+
+        Row firstRow = new Row(CategoryOne, CluesOne, "#067BC2");
+        Row secondRow = new Row(CategoryTwo, CluesTwo, "#DF2935");
+        Row thirdRow = new Row(CategoryThree, CluesThree, "#5F0A87");
+        Row fourthRow = new Row(CategoryFour, CluesFour, "#3F220F");
+        List<Row> rows = new List<Row> { firstRow, secondRow, thirdRow, fourthRow };
+        Board solution = new Board(rows);
+    }
+
+
+    interface IBoard
+    {
+        void play(string name);
+    }
+
+    public class Board : IBoard
+    {
+        public List<Row> Rows { get; set; }
+
+        public Board(List<Row> rows)
+        {
+            Rows = rows;
+        }
+        public void play(string name)
+        {
+            Console.WriteLine("Playing with: " + name);
+        }
+    }
+
+    public class Row
+    {
+
+        public string Affiliation { get; set; }
+        public string BackgroundColor { get; set; } = "#dbfe87";
+        public bool Solved { get; set; } = false;
+        public List<string> Clues { get; set; }
+        public Row(string affiliation, List<string> clues, string backgroundColor)
+        {
+            Affiliation = affiliation;
+            BackgroundColor = backgroundColor;
+            Clues = clues;
+        }
+    }
+
+    private bool ValidateForm()
+    {
+        bool isValid = true;
+
+        // Validate category names
+        if (string.IsNullOrWhiteSpace(CategoryOne))
+        {
+            // Handle validation error for CategoryOne
+            isValid = false;
+        }
+        // Repeat for CategoryTwo, CategoryThree, and CategoryFour
+
+        // Validate clues
+        foreach (var clue in CluesOne)
+        {
+            if (string.IsNullOrWhiteSpace(clue))
+            {
+                // Handle validation error for clue
+                isValid = false;
+            }
+        }
+        // Repeat for CluesTwo, CluesThree, and CluesFour
+
+        return isValid;
+    }
+
+    private void HandleSubmit()
+    {
+        @* Row First = new Row("Candy", new List<string> { "Snickers", "Milky Way", "Pixie Stick", "Skittles" },
+"#067BC2");
+Row Second = new Row("Meads", new List<string> { "Salami", "Pepperoni", "Ham", "Bacon" },
+"#DF2935");
+Row Third = new Row("Soda", new List<string> { "Mtn Dew", "Pepsi", "Coca-cola", "Sprite" },
+"#5F0A87");
+Row Fourth = new Row("Bands", new List<string> { "Radiohead", "Vampire Weekend", "Cold War Kids", "Beatles" },
+"#3F220F");
+
+List<Row> GameRows = new List<Row> { First, Second, Third, Fourth };
+Board GameBoard = new Board(GameRows); *@
+
+        Row firstRow = new Row(CategoryOne, CluesOne, "#067BC2");
+        Row secondRow = new Row(CategoryTwo, CluesTwo, "#DF2935");
+        Row thirdRow = new Row(CategoryThree, CluesThree, "#5F0A87");
+        Row fourthRow = new Row(CategoryFour, CluesFour, "#3F220F");
+        List<Row> rows = new List<Row> { firstRow, secondRow, thirdRow, fourthRow };
+        Board GameBoard = new Board(rows);
+
+        var data = new { Name = "Stuff", Board = GameBoard };
+        if (ValidateForm())
+        {
+            ((IJSRuntime)JSRuntime).InvokeVoidAsync("addDataToFirestore", "games", data);
+        }
+        else
+        {
+            Console.WriteLine("invalid");
+        }
+    }
+
+}

@@ -1,0 +1,169 @@
+@page "/play/{Param?}"
+@using System.Text.Json
+@using System.Threading
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Play Affiliations</PageTitle>
+
+<div class="container container-sm">
+    <div class="w-full">
+        <h1 class="text-center">AFFILIATIONS</h1>
+        <p class="text-center">Create groups of four</p>
+        <div class="game-board">
+            @foreach (Row row in solvedRows)
+            {
+                <div class="solved-row" style="@($"background-color: {row.BackgroundColor};")">
+                    <h4>@row.Affiliation</h4>
+                    <p>@(String.Join(", ", row.Clues))</p>
+                </div>
+
+            }
+            @foreach (string clue in gameBoard)
+            {
+                <div class="@(selectedClues.Contains(clue) ? "game-tile-selected game-tile" : "game-tile" )"
+                    @onclick="() => handleClickClue(clue)">
+                    <p>@clue</p>
+                </div>
+            }
+
+        </div>
+        <div class="flex justify-center gap">
+            <button class="btn" @onclick="handleSolve">Solve</button>
+            <button class="btn" @onclick="handleRandomize">Shuffle</button>
+            <button class="btn" @onclick="handleReset">Reset</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string? Param { get; set; }
+    private static Timer _timer { get; set; }
+
+    public static List<string> selectedClues = new List<string>() { };
+    public static List<Row> solvedRows = new List<Row>() { };
+
+    public Board? Solution { get; set; }
+    public string[]? gameBoard = { };
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+
+            GameData gameData = await JSRuntime.InvokeAsync<GameData>("getDocumentFromFirestore", "games", Param);
+
+            // Deserialize the board data into a Board object
+            Board solution = new Board();
+            solution.Rows = JsonSerializer.Deserialize<List<Row>>(JsonSerializer.Serialize(gameData.board.Rows));
+            Solution = solution;
+
+            handleReset();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+
+    private GameData? game;
+    private string? GameId;
+
+    private class GameData
+    {
+        public string? Id { get; set; }
+        public Board board { get; set; }
+
+    }
+
+    public static string[] handleGenerateGameBoard(Board solution)
+    {
+        List<string> cluesList = new List<string>(); // Initialize a list to store clues
+        foreach (Row row in solution.Rows)
+        {
+            foreach (string clue in row.Clues)
+            {
+                cluesList.Add(clue); // Add clues to the list
+            }
+        }
+
+        string[] clues = cluesList.ToArray(); // Convert the list to an array
+        Random.Shared.Shuffle(clues); // Shuffle the ar
+        return clues;
+    }
+
+    public static void handleClickClue(string clue)
+
+    {
+        if (selectedClues.Contains(clue))
+        {
+            selectedClues.Remove(clue);
+        }
+        else if (selectedClues.Count > 3)
+        {
+            return;
+        }
+        else
+        {
+            selectedClues.Add(clue);
+        }
+    }
+
+    public void handleReset()
+    {
+        solvedRows = new List<Row>();
+        foreach (Row row in Solution.Rows)
+        {
+            row.Solved = false;
+        }
+        gameBoard = handleGenerateGameBoard(Solution);
+    }
+
+
+    public void handleSolve()
+    {
+        Thread.Sleep(500);
+        foreach (Row row in Solution.Rows)
+        {
+            var result = selectedClues.Intersect(row.Clues);
+            if (result.Count() == 3) { }
+            else if (result.Count() == 4)
+            {
+                solvedRows.Add(row);
+                string[] newBoard = gameBoard.Where(clue => !row.Clues.Contains(clue)).ToArray();
+                selectedClues = new List<string>();
+                gameBoard = newBoard;
+                ((IJSRuntime)JSRuntime).InvokeVoidAsync("console.log", row.Affiliation);
+            }
+        }
+    }
+
+    public void handleRandomize()
+    {
+        selectedClues = new List<string>();
+
+        Random.Shared.Shuffle(gameBoard);
+    }
+
+
+
+    public class Board
+    {
+        public List<Row> Rows { get; set; } = new List<Row> { new Row() };
+
+
+    }
+
+    public class Row
+    {
+        public string? Affiliation { get; set; }
+        public List<string>? Clues { get; set; }
+        public string BackgroundColor { get; set; } = "#dbfe87";
+        public bool? Solved { get; set; } = false;
+
+    }
+
+    public void handleClick()
+    {
+        ((IJSRuntime)JSRuntime).InvokeVoidAsync("console.log", "hi");
+    }
+}
